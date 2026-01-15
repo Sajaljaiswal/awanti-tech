@@ -3,7 +3,7 @@ import { MapPin } from 'lucide-react';
 
 export default function Tracking() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-[58rem]">
       <h2 className="text-2xl font-bold text-gray-800">Logistics & Tracking</h2>
       <div className="bg-slate-100 h-64 rounded-xl flex items-center justify-center border-2 border-dashed border-gray-300">
         <div className="text-center text-gray-500">

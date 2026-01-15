@@ -8,7 +8,7 @@ export default function UserManagement() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-[59rem]" >
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800">User Management</h2>
         <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Invite User</button>
