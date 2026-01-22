@@ -8,10 +8,11 @@ import { supabase } from '../supabaseClient';
 
 const navItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'Users', path: '/users', icon: Users },
+  { name: 'Staff', path: '/staff', icon: Users },
   { name: 'Products', path: '/products', icon: Package },
-  { name: 'Services', path: '/services', icon: Wrench },
-  { name: 'Tracking', path: '/tracking', icon: MapPin },
+  { name: 'Tickets', path: '/tickets', icon: Wrench },
+  { name: "Requests", path: "/requests", icon: Bell },
+  { name: 'AMC Management', path: '/amcManagement', icon: Wrench },
 ];
 
 export default function Layout({ children }) {
@@ -89,7 +90,6 @@ export default function Layout({ children }) {
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Aesthetic Top Navbar */}
         <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-6 md:px-10 sticky top-0 z-30">
@@ -103,13 +103,13 @@ export default function Layout({ children }) {
               <input 
                 type="text" 
                 placeholder="Search everything..." 
-                className="bg-transparent border-none focus:ring-0 text-xs w-full ml-3 placeholder:text-gray-400 text-gray-600"
+                className="bg-transparent border-none focus:ring-0 text-xs w-full ml-3 text-slate-700 placeholder:text-slate-400"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-5">
-            <button className="p-2.5 text-gray-400 hover:bg-gray-50 hover:text-indigo-600 rounded-xl relative transition-all">
+            <button className="p-2.5 text-gray-400 hover:bg-gray-50 hover:text-indigo-700 rounded-xl relative transition-all">
               <Bell size={20} />
               <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-indigo-600 rounded-full border-2 border-white"></span>
             </button>

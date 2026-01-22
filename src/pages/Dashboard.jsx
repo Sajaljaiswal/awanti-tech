@@ -75,7 +75,7 @@ export default function Dashboard() {
         <StatCard title="Customers" value={stats.totalUsers} icon={Users} loading={loading} />
         <StatCard title="Inventory" value={stats.totalProducts} icon={Package} loading={loading} />
         <StatCard title="Requests" value={stats.activeServices} icon={Wrench} loading={loading} />
-        <StatCard title="Revenue" value={`₹${stats.revenue.toLocaleString()}`} icon={IndianRupee} loading={loading} />
+        <StatCard title="AMC" value={`₹${stats.revenue.toLocaleString()}`} icon={IndianRupee} loading={loading} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">

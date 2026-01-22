@@ -5,11 +5,13 @@ import { supabase } from './supabaseClient';
 // Pages & Components
 import Login from './pages/Login';
 import ProductManagement from './pages/ProductManagement';
-import UserManagement from './pages/UserManagement';
+// import UserManagement from './pages/UserManagement';
+import StaffManagement from './pages/StaffManagement';
 import Dashboard from './pages/Dashboard';
-import Services from './pages/Services';
-import Tracking from './pages/Tracking';
 import Layout from './components/Layout';
+import Tickets from './pages/Tickets';
+import AMCManagement from './pages/AMCManagement';
+import Requests from './pages/Requests';
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -57,11 +59,12 @@ export default function App() {
               <Layout>
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
-                  <Route path="/users" element={<UserManagement />} />
+                  {/* <Route path="/users" element={<UserManagement />} /> */}
+                  <Route path="/staff" element={<StaffManagement />} />
                   <Route path="/products" element={<ProductManagement />} />
-                  <Route path="/services" element={<Services />} />
-                  <Route path="/tracking" element={<Tracking />} />
-                  {/* Redirect any unknown sub-path to dashboard */}
+                  <Route path="/tickets" element={<Tickets />} />
+                  <Route path="/amcManagement" element={<AMCManagement />} />
+                  <Route path="/requests" element={<Requests />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Layout>
