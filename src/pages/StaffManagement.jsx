@@ -1,41 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Shield, MoreVertical, X } from "lucide-react";
-
-/* ---------------- DEMO API (Replace Later) ---------------- */
-const createUserAPI = (payload) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        success: true,
-        data: {
-          id: Date.now(),
-          ...payload,
-          status: "Active",
-        },
-      });
-    }, 800);
-  });
-};
-/* ---------------------------------------------------------- */
+import {
+  fetchStaff,
+  createStaff,
+  updateStaff,
+  toggleStaffStatus,
+  deleteStaff,
+} from "../api/staffApi";
 
 export default function StaffManagement() {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "Admin User",
-      email: "admin@awanti.com",
-      role: "Super Admin",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Service Tech",
-      email: "tech@awanti.com",
-      role: "Editor",
-      status: "Active",
-    },
-  ]);
-
+  const [users, setUsers] = useState([]);
+  console.log("Users:", users);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
@@ -46,64 +21,59 @@ export default function StaffManagement() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    role: "Editor",
+    mobile: "",
+    role: "Staff",
   });
 
-  /* ---------------- HANDLE CREATE USER ---------------- */
   const handleCreateUser = async () => {
-    if (!formData.name || !formData.email) return;
-
     setLoading(true);
-    try {
-      const res = await createUserAPI(formData);
-      if (res.success) {
-        setUsers((prev) => [...prev, res.data]);
-        setShowModal(false);
-        setFormData({ name: "", email: "", role: "Editor" });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEditUser = (user) => {
-    setIsEditMode(true);
-    setSelectedUser(user);
-    setFormData({
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    });
-    setShowModal(true);
-  };
-
-  const handleUpdateUser = () => {
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.id === selectedUser.id ? { ...user, ...formData } : user,
-      ),
-    );
-
+    const newUser = await createStaff(formData);
+    setUsers((prev) => [newUser, ...prev]);
     setShowModal(false);
-    setIsEditMode(false);
-    setSelectedUser(null);
-    setFormData({ name: "", email: "", role: "Editor" });
+    setLoading(false);
   };
 
-  const toggleUserStatus = () => {
+  const handleUpdateUser = async () => {
+    const updated = await updateStaff(selectedUser.id, formData);
+    setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+    setShowModal(false);
+  };
+
+  useEffect(() => {
+    async function loadStaff() {
+      try {
+        const data = await fetchStaff();
+        setUsers(data);
+      } catch (err) {
+        console.error("Failed to load staff", err);
+      }
+    }
+
+    loadStaff();
+  }, []);
+
+  const confirmToggleStatus = async () => {
+    if (!confirmUser) return;
+
+    const newStatus = confirmUser.status === "active" ? "disabled" : "active";
+
+    await toggleStaffStatus(confirmUser.id, newStatus);
+
     setUsers((prev) =>
-      prev.map((user) =>
-        user.id === confirmUser.id
-          ? {
-              ...user,
-              status: user.status === "Active" ? "Disabled" : "Active",
-            }
-          : user,
+      prev.map((u) =>
+        u.id === confirmUser.id ? { ...u, status: newStatus } : u,
       ),
     );
+
     setConfirmUser(null);
   };
 
+  const handleDeleteUser = async (user) => {
+    if (!user) return;
+
+    await deleteStaff(user.id);
+    setUsers((prev) => prev.filter((u) => u.id !== user.id));
+  };
   return (
     <div className="space-y-6 w-[59rem]">
       <div className="flex justify-between items-center">
@@ -119,39 +89,61 @@ export default function StaffManagement() {
         <table className="w-full text-left border-collapse">
           <thead className="bg-gray-50">
             <tr>
-              <th className="p-4 font-semibold text-gray-600">User</th>
+              <th className="p-4 font-semibold text-gray-600">Name</th>
+              <th className="p-4 font-semibold text-gray-600">Email</th>
+              <th className="p-4 font-semibold text-gray-600">Phone</th>
               <th className="p-4 font-semibold text-gray-600">Role</th>
               <th className="p-4 font-semibold text-gray-600">Status</th>
               <th className="p-4 font-semibold text-gray-600">Action</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <tr
-                key={user.id}
-                className="border-t hover:bg-gray-50 transition"
-              >
-                <td className="p-4">
-                  <div className="font-medium text-gray-900">{user.name}</div>
-                  <div className="text-sm text-gray-500">{user.email}</div>
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan="4" className="p-6 text-center text-gray-400">
+                  No staff found
                 </td>
-                <td className="p-4">
-                  <span className="flex items-center gap-1 text-sm">
-                    <Shield size={14} /> {user.role}
-                  </span>
-                </td>
-                <td className="p-4">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-bold ${
-                      user.status === "Active"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {user.status}
-                  </span>
-                </td>
-                <td className="p-4 text-gray-400 cursor-pointer">
+              </tr>
+            ) : (
+              users.map((user) => (
+                <tr
+                  key={user.id}
+                  className="border-t hover:bg-gray-50 transition"
+                >
+                  {/* USER INFO */}
+                  <td className="p-4">
+                    <div className="font-medium text-gray-900">{user.name}</div>
+                  </td>
+                  <td className="p-4">
+                    <span className="text-gray-700 text-sm">{user.email}</span>
+                  </td>
+                  {/* PHONE */}
+                  <td className="p-4">
+                    <span className="text-gray-700 text-sm">{user.mobile}</span>
+                  </td>
+
+                  {/* ROLE */}
+                  <td className="p-4">
+                    <span className="flex items-center gap-1 text-gray-600 text-sm capitalize">
+                      <Shield size={14} />
+                      {user.role || "Staff"}
+                    </span>
+                  </td>
+
+                  {/* STATUS */}
+                  <td className="p-4">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-bold ${
+                        user.status === "active"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {user.status}
+                    </span>
+                  </td>
+
+                  {/* ACTIONS */}
                   <td className="p-4 relative">
                     <button
                       onClick={() =>
@@ -167,7 +159,7 @@ export default function StaffManagement() {
                         <button
                           className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
                           onClick={() => {
-                            alert("Edit user (connect edit modal)");
+                            handleEditUser(user);
                             setActiveMenu(null);
                           }}
                         >
@@ -177,56 +169,30 @@ export default function StaffManagement() {
                         <button
                           className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
                           onClick={() => {
-                            toggleUserStatus(user.id);
-                            setActiveMenu(null);
                             setConfirmUser(user);
+                            setActiveMenu(null);
                           }}
                         >
-                          {user.status === "Active"
+                          {user.status === "active"
                             ? "❌ Disable"
                             : "✅ Enable"}
                         </button>
-                      </div>
-                    )}
 
-                    {confirmUser && (
-                      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-                        <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
-                          <h3 className="text-lg font-bold text-gray-800 mb-2">
-                            Confirm Action
-                          </h3>
-
-                          <p className="text-sm text-gray-600 mb-6">
-                            Are you sure you want to{" "}
-                            <b>
-                              {confirmUser.status === "Active"
-                                ? "disable"
-                                : "enable"}
-                            </b>{" "}
-                            this staff member?
-                          </p>
-
-                          <div className="flex justify-end gap-3">
-                            <button
-                              onClick={() => setConfirmUser(null)}
-                              className="px-4 py-2 rounded-lg border"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={toggleUserStatus}
-                              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
-                            >
-                              Confirm
-                            </button>
-                          </div>
-                        </div>
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 text-red-600"
+                          onClick={() => {
+                            handleDeleteUser(user);
+                            setActiveMenu(null);
+                          }}
+                        >
+                          🗑 Delete
+                        </button>
                       </div>
                     )}
                   </td>
-                </td>
-              </tr>
-            ))}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -280,6 +246,22 @@ export default function StaffManagement() {
                 />
               </div>
 
+              {/* Mobile */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Mobile Number
+                </label>
+                <input
+                  type="tel"
+                  placeholder="Enter mobile number"
+                  className="w-full bg-white border border-gray-300 text-gray-800 rounded-lg px-3 py-2"
+                  value={formData.mobile}
+                  onChange={(e) =>
+                    setFormData({ ...formData, mobile: e.target.value })
+                  }
+                />
+              </div>
+
               {/* Role */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
@@ -292,9 +274,9 @@ export default function StaffManagement() {
                     setFormData({ ...formData, role: e.target.value })
                   }
                 >
-                  <option value="Editor">Editor</option>
                   <option value="Admin">Admin</option>
-                  <option value="Super Admin">Super Admin</option>
+                  <option value="Staff">Staff</option>
+                  <option value="User">User</option>
                 </select>
               </div>
             </div>
@@ -310,8 +292,38 @@ export default function StaffManagement() {
           </div>
         </div>
       )}
+      {/* ================= CONFIRM ENABLE / DISABLE ================= */}
+      {confirmUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+            <h3 className="text-lg font-bold text-gray-800 mb-2">
+              Confirm Action
+            </h3>
 
-      {/* ========================================= */}
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to{" "}
+              <b>{confirmUser.status === "active" ? "disable" : "enable"}</b>{" "}
+              this staff member?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmUser(null)}
+                className="px-4 py-2 rounded-lg border"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={confirmToggleStatus}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

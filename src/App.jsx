@@ -17,6 +17,12 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
+
+useEffect(() => {
+  supabase.auth.getSession().then(({ data }) => {
+    console.log("SUPABASE SESSION:", data.session);
+  });
+}, []);
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);

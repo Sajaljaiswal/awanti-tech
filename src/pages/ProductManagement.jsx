@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { supabase } from "../supabaseClient";
 import {
   Plus,
-  Search,
-  Edit2,
   Trash2,
-  Package,
-  Filter,
   Loader2,
   X,
   Upload,
   ImageIcon,
 } from "lucide-react";
-import { getAuthHeader } from "../api/apiClient";
+import {
+  getProducts,
+  createProduct,
+  deleteProduct,
+} from "../api/productApi";
 
 export default function ProductManagement() {
   const [products, setProducts] = useState([]);
@@ -38,11 +37,8 @@ export default function ProductManagement() {
     setLoading(true);
 
     try {
-      const headers = await getAuthHeader();
 
-      const res = await fetch("http://localhost:5000/products", {
-        headers,
-      });
+       const res = await getProducts();
 
       if (!res.ok) {
         throw new Error("Failed to fetch products");
@@ -68,24 +64,15 @@ export default function ProductManagement() {
     setUploading(true);
 
     try {
-      // 1️⃣ Get auth header (Bearer token)
-      const headers = await getAuthHeader();
 
       // 2️⃣ Call backend API
-      const res = await fetch("http://localhost:5000/products", {
-        method: "POST",
-        headers: {
-          ...headers,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          category: formData.category,
-          price: Number(formData.price),
-          stock: Number(formData.stock),
-          image_url: null, // image upload will move to backend later
-        }),
-      });
+      const res = await createProduct({
+      name: formData.name,
+      category: formData.category,
+      price: Number(formData.price),
+      stock: Number(formData.stock),
+      image_url: null,
+    });
 
       if (!res.ok) {
         const err = await res.json();
@@ -116,13 +103,9 @@ export default function ProductManagement() {
 
     try {
       // 1️⃣ Get auth header
-      const headers = await getAuthHeader();
 
       // 2️⃣ Call backend DELETE API
-      const res = await fetch(`http://localhost:5000/products/${product.id}`, {
-        method: "DELETE",
-        headers,
-      });
+     await deleteProduct(product.id);
 
       if (!res.ok) {
         const err = await res.json();

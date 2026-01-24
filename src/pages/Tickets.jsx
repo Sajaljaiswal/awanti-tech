@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Plus,
-  User,
-  Calendar,
-  Trash2,
-  Pencil,
-} from "lucide-react";
+import { Plus, User, Calendar, Trash2, Pencil } from "lucide-react";
 import {
   createTicket,
   getAllTickets,
@@ -111,7 +105,7 @@ export default function Tickets() {
     <div className="w-[59rem] mx-auto p-4 space-y-6">
       {/* HEADER */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Ticket Management</h2>
+        <h2 className="text-2xl text-gray-800 font-bold">Ticket Management</h2>
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg"
@@ -122,7 +116,7 @@ export default function Tickets() {
 
       {/* LIST */}
       {loading ? (
-        <p className="text-center text-gray-400">Loading tickets...</p>
+        <p className="text-center text-gray-900">Loading tickets...</p>
       ) : (
         <div className="grid gap-4">
           {tickets.map((t) => (
@@ -144,17 +138,19 @@ export default function Tickets() {
 
               <div className="flex items-center gap-3 flex-wrap">
                 {/* STATUS DROPDOWN */}
-                <select
-                  value={t.status}
+                {/* <select
+                  value={t.assigned_staff_id || ""}
                   onChange={(e) =>
-                    handleStatusChange(t.id, e.target.value)
+                    assignTicket(t.id, { staff_id: e.target.value })
                   }
-                  className="border rounded px-2 py-1 text-sm"
                 >
-                  {STATUS_OPTIONS.map((s) => (
-                    <option key={s}>{s}</option>
+                  <option value="">Unassigned</option>
+                  {staff.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
                   ))}
-                </select>
+                </select> */}
 
                 {/* EDIT */}
                 <button
@@ -208,7 +204,7 @@ export default function Tickets() {
 function Modal({ title, onClose, onSubmit, formData, setFormData }) {
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-md rounded-xl p-6">
+      <div className="bg-red w-full max-w-md rounded-xl p-6">
         <h3 className="text-xl font-bold mb-4">{title}</h3>
 
         {["customer_name", "phone", "address", "product_type", "issue"].map(

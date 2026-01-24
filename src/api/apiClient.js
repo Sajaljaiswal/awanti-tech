@@ -1,13 +1,24 @@
+import axios from "axios";              // ✅ MISSING IMPORT (FIXED)
 import { supabase } from "../supabaseClient";
 
-export async function getAuthHeader() {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+const API = axios.create({
+  baseURL: "http://localhost:5000",
+});
 
-  if (!session) throw new Error("User not logged in");
+API.interceptors.request.use(
+  async (config) => {
+    const { data } = await supabase.auth.getSession();
+    const token = data?.session?.access_token;
 
-  return {
-    Authorization: `Bearer ${session.access_token}`,
-  };
-}
+    console.log("AXIOS INTERCEPTOR TOKEN:", token); // DEBUG
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error),
+);
+
+export default API;
