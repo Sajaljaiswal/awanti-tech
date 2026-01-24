@@ -1,248 +1,242 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Clock,
-  CheckCircle,
-  ChevronRight,
-  Calendar,
-  User,
   Plus,
-  X,
+  User,
+  Calendar,
+  Trash2,
+  Pencil,
 } from "lucide-react";
+import {
+  createTicket,
+  getAllTickets,
+  deleteTicket,
+  updateTicketStatus,
+} from "../api/ticketApi";
+
+const STATUS_OPTIONS = ["Pending", "In Progress", "Completed"];
 
 export default function Tickets() {
-  const [tickets, setTickets] = useState([
-    {
-      id: "TCK-101",
-      customer: "Alice Smith",
-      issue: "Internet not working",
-      status: "Pending",
-      date: "Jan 16, 2026",
-      assignedTo: null,
-    },
-    {
-      id: "TCK-102",
-      customer: "Bob Jones",
-      issue: "CCTV Installation",
-      status: "In Progress",
-      date: "Jan 15, 2026",
-      assignedTo: "Service Tech",
-    },
-    {
-      id: "TCK-103",
-      customer: "Charlie Davis",
-      issue: "Printer cartridge refill",
-      status: "Completed",
-      date: "Jan 14, 2026",
-      assignedTo: "Admin User",
-    },
-  ]);
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [showModal, setShowModal] = useState(false);
+  /* ---------- CREATE MODAL ---------- */
+  const [showCreate, setShowCreate] = useState(false);
 
+  /* ---------- EDIT MODAL ---------- */
+  const [showEdit, setShowEdit] = useState(false);
+  const [editingTicket, setEditingTicket] = useState(null);
+
+  /* ---------- FORM ---------- */
   const [formData, setFormData] = useState({
-    customer: "",
+    customer_name: "",
+    phone: "",
+    address: "",
+    product_type: "",
     issue: "",
-    assignedTo: "",
   });
 
-  /* ---------------- STATUS STYLES ---------------- */
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "Completed":
-        return "bg-emerald-50 text-emerald-600 border-emerald-100";
-      case "In Progress":
-        return "bg-blue-50 text-blue-600 border-blue-100";
-      default:
-        return "bg-amber-50 text-amber-600 border-amber-100";
+  /* ---------- FETCH ---------- */
+  const fetchTickets = async () => {
+    try {
+      setLoading(true);
+      const res = await getAllTickets();
+      setTickets(res.data);
+    } catch (err) {
+      alert("Failed to load tickets");
+    } finally {
+      setLoading(false);
     }
   };
 
-  /* ---------------- CREATE TICKET ---------------- */
-  const handleCreateTicket = () => {
-    if (!formData.customer || !formData.issue) return;
+  useEffect(() => {
+    fetchTickets();
+  }, []);
 
-    setTickets((prev) => [
-      {
-        id: `TCK-${Math.floor(Math.random() * 900 + 100)}`,
-        customer: formData.customer,
-        issue: formData.issue,
-        assignedTo: formData.assignedTo || null,
-        status: formData.assignedTo ? "In Progress" : "Pending",
-        date: new Date().toDateString(),
-      },
-      ...prev,
-    ]);
+  /* ---------- CREATE ---------- */
+  const handleCreate = async () => {
+    try {
+      await createTicket(formData);
+      setShowCreate(false);
+      setFormData({
+        customer_name: "",
+        phone: "",
+        address: "",
+        product_type: "",
+        issue: "",
+      });
+      fetchTickets();
+    } catch (err) {
+      alert(err.response?.data?.message || "Create failed");
+    }
+  };
 
-    setShowModal(false);
-    setFormData({ customer: "", issue: "", assignedTo: "" });
+  /* ---------- DELETE ---------- */
+  const handleDelete = async (id) => {
+    if (!confirm("Delete this ticket permanently?")) return;
+    try {
+      await deleteTicket(id);
+      setTickets((prev) => prev.filter((t) => t.id !== id));
+    } catch {
+      alert("Delete failed");
+    }
+  };
+
+  /* ---------- STATUS UPDATE ---------- */
+  const handleStatusChange = async (ticketId, status) => {
+    try {
+      await updateTicketStatus(ticketId, {
+        status,
+        staff_id: "SYSTEM", // or req.user.id if available
+      });
+      fetchTickets();
+    } catch {
+      alert("Status update failed");
+    }
+  };
+
+  /* ---------- EDIT ---------- */
+  const openEditModal = (ticket) => {
+    setEditingTicket(ticket);
+    setFormData({
+      customer_name: ticket.customer_name,
+      phone: ticket.phone,
+      address: ticket.address,
+      product_type: ticket.product_type,
+      issue: ticket.issue,
+    });
+    setShowEdit(true);
   };
 
   return (
-    <div className="w-[58rem] mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="w-[59rem] mx-auto p-4 space-y-6">
       {/* HEADER */}
-      <div className="flex justify-between items-center border-b border-gray-100 pb-8">
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-900 tracking-tight">
-            Ticket Management
-          </h2>
-          <p className="text-sm text-gray-400 mt-1">
-            Track, assign, and resolve customer issues.
-          </p>
-        </div>
-
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Ticket Management</h2>
         <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700"
+          onClick={() => setShowCreate(true)}
+          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg"
         >
           <Plus size={16} /> Add Ticket
         </button>
       </div>
 
-      {/* TICKET LIST */}
-      <div className="grid gap-4">
-        {tickets.map((tkt) => (
-          <div
-            key={tkt.id}
-            className="group bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
-          >
-            <div className="flex gap-5 items-center">
-              {/* STATUS ICON */}
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center border ${
-                  tkt.status === "Completed"
-                    ? "bg-emerald-50 border-emerald-100 text-emerald-500"
-                    : "bg-amber-50 border-amber-100 text-amber-500"
-                }`}
-              >
-                {tkt.status === "Completed" ? (
-                  <CheckCircle size={22} />
-                ) : (
-                  <Clock size={22} />
-                )}
-              </div>
-
-              <div>
-                <h4 className="text-sm font-semibold text-gray-800 group-hover:text-indigo-600">
-                  {tkt.issue}
-                </h4>
-
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
-                  <span className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
-                    <User size={12} /> {tkt.customer}
-                  </span>
-
-                  <span className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
-                    <Calendar size={12} /> {tkt.date}
-                  </span>
-
-                  <span className="text-[10px] font-bold text-gray-300 uppercase">
-                    #{tkt.id}
-                  </span>
-                </div>
-
-                {tkt.assignedTo && (
-                  <p className="text-xs mt-1 text-indigo-500 font-semibold">
-                    Assigned to: {tkt.assignedTo}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-none pt-4 md:pt-0">
-              <span
-                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${getStatusStyle(
-                  tkt.status,
-                )}`}
-              >
-                {tkt.status}
-              </span>
-
-              <button className="flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 uppercase">
-                View
-                <ChevronRight size={14} />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ADD TICKET MODAL */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
-            {/* Close */}
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute right-4 top-4 bg-gray-900 text-white p-2 rounded-lg hover:bg-gray-800"
+      {/* LIST */}
+      {loading ? (
+        <p className="text-center text-gray-400">Loading tickets...</p>
+      ) : (
+        <div className="grid gap-4">
+          {tickets.map((t) => (
+            <div
+              key={t.id}
+              className="bg-white border rounded-lg p-4 flex flex-col md:flex-row justify-between gap-4"
             >
-              ✕
-            </button>
-
-            <h3 className="text-xl font-bold text-gray-900 mb-6">
-              Create Ticket
-            </h3>
-
-            <div className="space-y-4">
-              {/* Customer */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Customer Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter customer name"
-                  className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                  value={formData.customer}
-                  onChange={(e) =>
-                    setFormData({ ...formData, customer: e.target.value })
-                  }
-                />
+                <h4 className="font-semibold">{t.issue}</h4>
+                <p className="text-xs text-gray-500 flex items-center gap-2">
+                  <User size={12} /> {t.customer_name}
+                  <Calendar size={12} />{" "}
+                  {new Date(t.created_at).toLocaleDateString()}
+                </p>
+                <p className="text-[10px] text-gray-400 font-bold">
+                  #{t.ticket_number}
+                </p>
               </div>
 
-              {/* Issue */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Issue / Problem
-                </label>
-                <input
-                  type="text"
-                  placeholder="Describe the issue"
-                  className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                  value={formData.issue}
-                  onChange={(e) =>
-                    setFormData({ ...formData, issue: e.target.value })
-                  }
-                />
-              </div>
-
-              {/* Assign */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Assign To
-                </label>
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* STATUS DROPDOWN */}
                 <select
-                  className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                  value={formData.assignedTo}
+                  value={t.status}
                   onChange={(e) =>
-                    setFormData({ ...formData, assignedTo: e.target.value })
+                    handleStatusChange(t.id, e.target.value)
                   }
+                  className="border rounded px-2 py-1 text-sm"
                 >
-                  <option value="">Assign later</option>
-                  <option>Admin User</option>
-                  <option>Service Tech</option>
+                  {STATUS_OPTIONS.map((s) => (
+                    <option key={s}>{s}</option>
+                  ))}
                 </select>
+
+                {/* EDIT */}
+                <button
+                  onClick={() => openEditModal(t)}
+                  className="text-blue-600"
+                >
+                  <Pencil size={16} />
+                </button>
+
+                {/* DELETE */}
+                <button
+                  onClick={() => handleDelete(t.id)}
+                  className="text-red-600"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
-
-            <button
-              onClick={handleCreateTicket}
-              className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-semibold"
-            >
-              Create Ticket
-            </button>
-          </div>
+          ))}
         </div>
       )}
+
+      {/* CREATE MODAL */}
+      {showCreate && (
+        <Modal
+          title="Create Ticket"
+          onClose={() => setShowCreate(false)}
+          onSubmit={handleCreate}
+          formData={formData}
+          setFormData={setFormData}
+        />
+      )}
+
+      {/* EDIT MODAL */}
+      {showEdit && (
+        <Modal
+          title="Edit Ticket"
+          onClose={() => setShowEdit(false)}
+          onSubmit={() => setShowEdit(false)}
+          formData={formData}
+          setFormData={setFormData}
+          readOnly
+        />
+      )}
+    </div>
+  );
+}
+
+/* ================= MODAL COMPONENT ================= */
+
+function Modal({ title, onClose, onSubmit, formData, setFormData }) {
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+      <div className="bg-white w-full max-w-md rounded-xl p-6">
+        <h3 className="text-xl font-bold mb-4">{title}</h3>
+
+        {["customer_name", "phone", "address", "product_type", "issue"].map(
+          (field) => (
+            <input
+              key={field}
+              placeholder={field.replace("_", " ").toUpperCase()}
+              value={formData[field]}
+              onChange={(e) =>
+                setFormData({ ...formData, [field]: e.target.value })
+              }
+              className="w-full border rounded px-3 py-2 mb-3"
+            />
+          ),
+        )}
+
+        <div className="flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2">
+            Cancel
+          </button>
+          <button
+            onClick={onSubmit}
+            className="bg-indigo-600 text-white px-4 py-2 rounded"
+          >
+            Save
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

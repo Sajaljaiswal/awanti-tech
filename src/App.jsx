@@ -18,13 +18,11 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Initial check for an existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
     });
 
-    // 2. Listen for Auth changes (Login/Logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setLoading(false);
@@ -33,7 +31,6 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Show a simple spinner while checking authentication
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50">
@@ -45,13 +42,11 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Route: Login */}
         <Route 
           path="/login" 
           element={!session ? <Login /> : <Navigate to="/" replace />} 
         />
 
-        {/* Protected Routes: Wrapped in Layout */}
         <Route 
           path="/*" 
           element={

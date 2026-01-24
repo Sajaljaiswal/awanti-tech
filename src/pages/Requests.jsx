@@ -42,9 +42,7 @@ export default function Requests() {
   /* ---------------- MARK DONE ---------------- */
   const markProcessed = (id) => {
     setRequests((prev) =>
-      prev.map((r) =>
-        r.id === id ? { ...r, status: "Processed" } : r
-      )
+      prev.map((r) => (r.id === id ? { ...r, status: "Processed" } : r)),
     );
   };
 
@@ -52,9 +50,7 @@ export default function Requests() {
     <div className="w-[58rem] mx-auto space-y-8">
       {/* HEADER */}
       <div className="border-b pb-6">
-        <h2 className="text-2xl font-semibold text-slate-900">
-          New Requests
-        </h2>
+        <h2 className="text-2xl font-semibold text-slate-900">New Requests</h2>
         <p className="text-sm text-slate-500 mt-1">
           Requests from new customers awaiting action
         </p>
@@ -68,12 +64,8 @@ export default function Requests() {
             className="bg-white border border-slate-200 rounded-xl p-5 flex justify-between items-center"
           >
             <div>
-              <h4 className="font-semibold text-slate-800">
-                {req.name}
-              </h4>
-              <p className="text-sm text-slate-500">
-                {req.email}
-              </p>
+              <h4 className="font-semibold text-slate-800">{req.name}</h4>
+              <p className="text-sm text-slate-500">{req.email}</p>
               <p className="text-xs text-slate-400 mt-1">
                 Issue: {req.issue} • {req.date}
               </p>
@@ -159,9 +151,7 @@ function Modal({ title, children, onClose }) {
           <X size={16} />
         </button>
 
-        <h3 className="text-xl font-bold text-slate-900 mb-6">
-          {title}
-        </h3>
+        <h3 className="text-xl font-bold text-slate-900 mb-6">{title}</h3>
 
         {children}
       </div>
