@@ -6,7 +6,9 @@ import {
   updateStaff,
   toggleStaffStatus,
   deleteStaff,
-} from "../api/staffApi";
+} from "../../api/staffApi";
+import { Link } from "react-router-dom";
+
 
 export default function StaffManagement() {
   const [users, setUsers] = useState([]);
@@ -112,7 +114,12 @@ export default function StaffManagement() {
                 >
                   {/* USER INFO */}
                   <td className="p-4">
-                    <div className="font-medium text-gray-900">{user.name}</div>
+                     <Link
+    to={`/staff/${user.id}`}
+    className="font-medium text-indigo-600 hover:underline"
+  >
+    {user.name}
+  </Link>
                   </td>
                   <td className="p-4">
                     <span className="text-gray-700 text-sm">{user.email}</span>

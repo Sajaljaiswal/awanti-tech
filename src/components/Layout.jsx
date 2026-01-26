@@ -9,6 +9,7 @@ import { supabase } from '../supabaseClient';
 const navItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
   { name: 'Staff', path: '/staff', icon: Users },
+  { name: 'Users', path: '/user', icon: Users },
   { name: 'Products', path: '/products', icon: Package },
   { name: 'Tickets', path: '/tickets', icon: Wrench },
   { name: "Requests", path: "/requests", icon: Bell },

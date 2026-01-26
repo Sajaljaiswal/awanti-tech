@@ -31,3 +31,10 @@ export const deleteStaff = async (id) => {
   const res = await API.delete(`/staff/${id}`);
   return res.data;
 };
+
+export const getStaffById = async (id) => {
+  const res = await API.get(`/staff/${id}`);
+  return res.data;
+};
+
+export const getTicketsByStaff = (staffId) => API.get(`/staff/assigned/${staffId}`);
