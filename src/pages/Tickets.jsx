@@ -4,14 +4,20 @@ import {
   createTicket,
   getAllTickets,
   deleteTicket,
+  assignTicket,
   updateTicketStatus,
 } from "../api/ticketApi";
+import { fetchStaff } from "../api/staffApi";
 
 const STATUS_OPTIONS = ["Pending", "In Progress", "Completed"];
 
 export default function Tickets() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [staff, setStaff] = useState([]);
+  const [showAssign, setShowAssign] = useState(false);
+  const [assigningTicket, setAssigningTicket] = useState(null);
+  const [selectedStaff, setSelectedStaff] = useState("");
 
   /* ---------- CREATE MODAL ---------- */
   const [showCreate, setShowCreate] = useState(false);
@@ -41,6 +47,13 @@ export default function Tickets() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchTickets();
+
+    fetchStaff()
+      .then(setStaff)
+      .catch(() => alert("Failed to load staff"));
+  }, []);
 
   useEffect(() => {
     fetchTickets();
@@ -72,6 +85,25 @@ export default function Tickets() {
       setTickets((prev) => prev.filter((t) => t.id !== id));
     } catch {
       alert("Delete failed");
+    }
+  };
+
+  const handleAssignTicket = async () => {
+    if (!selectedStaff) {
+      alert("Please select staff");
+      return;
+    }
+
+    try {
+      await assignTicket(assigningTicket.id, selectedStaff);
+
+      setShowAssign(false);
+      setAssigningTicket(null);
+      setSelectedStaff("");
+
+      fetchTickets(); // refresh list
+    } catch {
+      alert("Assignment failed");
     }
   };
 
@@ -152,6 +184,16 @@ export default function Tickets() {
                   ))}
                 </select> */}
 
+                <button
+                  onClick={() => {
+                    setAssigningTicket(t);
+                    setShowAssign(true);
+                  }}
+                  className="text-indigo-600 text-sm border px-2 py-1 rounded"
+                >
+                  Assign
+                </button>
+
                 {/* EDIT */}
                 <button
                   onClick={() => openEditModal(t)}
@@ -194,6 +236,46 @@ export default function Tickets() {
           setFormData={setFormData}
           readOnly
         />
+      )}
+      {showAssign && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md rounded-xl p-6">
+            <h3 className="text-xl text-gray-800 font-bold mb-4">Assign Ticket</h3>
+
+            <p className="text-sm text-gray-600 mb-2">
+              Ticket: <b>{assigningTicket.issue}</b>
+            </p>
+
+            <select
+              value={selectedStaff}
+              onChange={(e) => setSelectedStaff(e.target.value)}
+              className="w-full border text-gray-800 rounded px-3 py-2 mb-4"
+            >
+              <option value="">Select Staff</option>
+              {staff.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} ({s.role})
+                </option>
+              ))}
+            </select>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowAssign(false)}
+                className="px-4 py-2"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleAssignTicket}
+                className="bg-indigo-600 text-white px-4 py-2 rounded"
+              >
+                Assign
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -10,8 +10,6 @@ API.interceptors.request.use(
     const { data } = await supabase.auth.getSession();
     const token = data?.session?.access_token;
 
-    console.log("AXIOS INTERCEPTOR TOKEN:", token); // DEBUG
-
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

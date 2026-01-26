@@ -1,220 +1,172 @@
-import React, { useState } from "react";
-import { X, Plus } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Plus, Trash2, Pencil, X } from "lucide-react";
+import { fetchAMCs, createAMC, updateAMC, deleteAMC } from "../api/amcApi";
+import { fetchUsers } from "../api/userApi";
 
 export default function AMCManagement() {
+  const [amcs, setAmcs] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState(null);
 
-  const [formData, setFormData] = useState({
-    customerType: "new",
-    customerName: "",
-    duration: "12 Months",
+  const [form, setForm] = useState({
+    customer_id: "",
+    customer_type: "New Customer",
+    amc_type: "New",
+    duration_months: 12,
     fees: "",
-    products: "",
-    amcType: "New",
-    termsAccepted: false,
-    customerSignature: "",
-    staffSignature: "",
+    products_covered: "",
   });
 
-  const handleSubmit = () => {
-    if (
-      !formData.customerName ||
-      !formData.customerSignature ||
-      !formData.staffSignature ||
-      !formData.termsAccepted
-    ) {
-      alert("Please complete all mandatory fields");
+  useEffect(() => {
+    load();
+  }, []);
+
+  const load = async () => {
+    const a = await fetchAMCs();
+    const u = await fetchUsers();
+    setAmcs(a.data);
+    setCustomers(u.data);
+  };
+
+  const submit = async () => {
+    if (!form.customer_id || !form.fees) {
+      alert("Customer & fees required");
       return;
     }
 
-    console.log("AMC Submitted:", formData);
-    setShowModal(false);
+    if (editing) {
+      const res = await updateAMC(editing.id, form);
+      setAmcs((p) => p.map((a) => (a.id === res.data.id ? res.data : a)));
+    } else {
+      const res = await createAMC(form);
+      setAmcs((p) => [res.data, ...p]);
+    }
+
+    close();
   };
 
-  const calculateExpiryDate = (startDate, durationMonths) => {
-  const date = new Date(startDate);
-  date.setMonth(date.getMonth() + durationMonths);
-  return date;
-};
-
-const getAMCStatus = (expiryDate) => {
-  const today = new Date();
-  const diffDays = Math.ceil(
-    (new Date(expiryDate) - today) / (1000 * 60 * 60 * 24)
-  );
-
-  if (diffDays < 0) return "Expired";
-  if (diffDays <= 30) return "Near Expiry";
-  return "Active";
-};
-
+  const close = () => {
+    setShowModal(false);
+    setEditing(null);
+    setForm({
+      customer_id: "",
+      customer_type: "New Customer",
+      amc_type: "New",
+      duration_months: 12,
+      fees: "",
+      products_covered: "",
+    });
+  };
 
   return (
-    <div className="w-[58rem] mx-auto space-y-8">
-      {/* HEADER */}
-      <div className="flex justify-between items-center border-b pb-6">
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-900">
-            AMC Booking & Renewal
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Create or renew Annual Maintenance Contracts
-          </p>
-        </div>
-
+    <div className="w-[59rem] space-y-6">
+      <div className="flex justify-between">
+        <h2 className="text-2xl text-gray-800 font-bold">AMC Management</h2>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700"
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex gap-2"
         >
-          <Plus size={16} /> Add AMC
+          <Plus size={16} /> Register AMC
         </button>
       </div>
 
-      {/* EMPTY STATE */}
-      <div className="bg-gray-50 border border-dashed rounded-xl p-10 text-center text-gray-400">
-        No AMC records yet.
-      </div>
+      <table className="w-full bg-white rounded-xl border">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="p-4 text-gray-700">Customer</th>
+            <th className="p-4 text-gray-700">Duration</th>
+            <th className="p-4 text-gray-700">Fees</th>
+            <th className="p-4 text-gray-700">Status</th>
+            <th className="p-4 text-gray-700">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {amcs.map((a) => (
+            <tr key={a.id} className="border-t">
+              <td className="p-4">
+                {a.customers?.name}
+                <div className="text-xs text-gray-800">
+                  {a.customers?.mobile}
+                </div>
+              </td>
+              <td className="p-4 text-gray-700">{a.duration_months} months</td>
+              <td className="p-4 text-gray-700">₹{a.fees}</td>
+              <td className="p-4 text-gray-700 capitalize">{a.status}</td>
+              <td className="p-4 flex gap-3">
+                <Pencil
+                  className="cursor-pointer text-blue-600"
+                  size={16}
+                  onClick={() => {
+                    setEditing(a);
+                    setForm(a);
+                    setShowModal(true);
+                  }}
+                />
+                <Trash2
+                  className="cursor-pointer text-red-600"
+                  size={16}
+                  onClick={async () => {
+                    if (confirm("Delete AMC?")) {
+                      await deleteAMC(a.id);
+                      setAmcs((p) => p.filter((x) => x.id !== a.id));
+                    }
+                  }}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-      {/* AMC MODAL */}
+      {/* MODAL */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl p-6 relative">
-            {/* Close */}
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute right-4 top-4 bg-gray-900 text-white p-2 rounded-lg"
-            >
-              <X size={18} />
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md relative">
+            <button onClick={close} className="absolute right-4 top-4">
+              <X />
             </button>
 
-            <h3 className="text-xl font-bold text-gray-900 mb-6">
-              AMC Registration Form
+            <h3 className="text-xl font-bold mb-4">
+              {editing ? "Edit AMC" : "Register AMC"}
             </h3>
 
-            <div className="space-y-4">
-              {/* Customer Type */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Customer Type
-                </label>
-                <select
-                  className="w-full bg-gray-50 border text-gray-900 border-gray-300 rounded-lg px-3 py-2"
-                  value={formData.customerType}
-                  onChange={(e) =>
-                    setFormData({ ...formData, customerType: e.target.value })
-                  }
-                >
-                  <option value="new">New Customer</option>
-                  <option value="existing">Existing Customer</option>
-                </select>
-              </div>
+            <select
+              className="w-full border text-gray-700 p-2 mb-3"
+              value={form.customer_id}
+              onChange={(e) =>
+                setForm({ ...form, customer_id: e.target.value })
+              }
+            >
+              <option value="">Select Customer</option>
+              {customers.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({c.mobile})
+                </option>
+              ))}
+            </select>
 
-              {/* Customer Name */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Customer Name *
-                </label>
-                <input
-                  className="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg px-3 py-2"
-                  placeholder="Enter customer name"
-                  value={formData.customerName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, customerName: e.target.value })
-                  }
-                />
-              </div>
+            <input
+              placeholder="AMC Fees"
+              className="w-full border text-gray-700 p-2 mb-3"
+              value={form.fees}
+              onChange={(e) => setForm({ ...form, fees: e.target.value })}
+            />
 
-              {/* AMC Type */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    AMC Type
-                  </label>
-                  <select
-                    className="w-full bg-gray-50 border text-gray-900 border-gray-300 rounded-lg px-3 py-2"
-                    value={formData.amcType}
-                    onChange={(e) =>
-                      setFormData({ ...formData, amcType: e.target.value })
-                    }
-                  >
-                    <option>New</option>
-                    <option>Renewal</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Duration
-                  </label>
-                  <select
-                    className="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg px-3 py-2"
-                    value={formData.duration}
-                    onChange={(e) =>
-                      setFormData({ ...formData, duration: e.target.value })
-                    }
-                  >
-                    <option>6 Months</option>
-                    <option>12 Months</option>
-                    <option>24 Months</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Fees */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  AMC Fees (₹)
-                </label>
-                <input
-                  type="number"
-                  className="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg px-3 py-2"
-                  placeholder="Enter amount"
-                  value={formData.fees}
-                  onChange={(e) =>
-                    setFormData({ ...formData, fees: e.target.value })
-                  }
-                />
-              </div>
-
-              {/* Products */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Products Covered
-                </label>
-                <textarea
-                  className="w-full bg-gray-50 border text-gray-900 border-gray-300 rounded-lg px-3 py-2"
-                  placeholder="List covered products"
-                  rows={2}
-                  value={formData.products}
-                  onChange={(e) =>
-                    setFormData({ ...formData, products: e.target.value })
-                  }
-                />
-              </div>
-
-           
-
-              {/* Terms */}
-              <label className="flex items-center gap-2 text-sm text-gray-600">
-                <input
-                  type="checkbox"
-                  checked={formData.termsAccepted}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      termsAccepted: e.target.checked,
-                    })
-                  }
-                />
-                I agree to AMC terms & conditions *
-              </label>
-            </div>
+            <textarea
+              placeholder="Products Covered"
+              className="w-full border text-gray-700 p-2 mb-3"
+              value={form.products_covered}
+              onChange={(e) =>
+                setForm({ ...form, products_covered: e.target.value })
+              }
+            />
 
             <button
-              onClick={handleSubmit}
-              className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-semibold"
+              onClick={submit}
+              className="w-full bg-indigo-600 text-white py-2 rounded"
             >
-              Submit AMC
+              Save AMC
             </button>
           </div>
         </div>
