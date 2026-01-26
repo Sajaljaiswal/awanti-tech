@@ -15,9 +15,11 @@ import StaffManagement from "./pages/Staff/StaffManagement";
 import Dashboard from "./pages/Dashboard";
 import Layout from "./components/Layout";
 import Tickets from "./pages/Tickets";
-import AMCManagement from "./pages/AMCManagement";
 import Requests from "./pages/Requests";
 import StaffDetails from "./pages/Staff/StaffDetails.jsx";
+import StaffLogin from "./pages/Staff/StaffLogin.jsx";
+import StaffDashboard from "./pages/Staff/StaffDashboard.jsx";
+import AMCManagement from "./pages/AMC/AMCManagement.jsx";
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -71,10 +73,12 @@ export default function App() {
                   <Route path="/staff" element={<StaffManagement />} />
                   <Route path="/products" element={<ProductManagement />} />
                   <Route path="/tickets" element={<Tickets />} />
-                  <Route path="/amcManagement" element={<AMCManagement />} />
+                  <Route path="/amcManagement" element={<AMCManagement/>} />
                   <Route path="/requests" element={<Requests />} />
                   <Route path="/user" element={<UserManagement />} />
                   <Route path="/staff/:staffId" element={<StaffDetails />} />
+                  <Route path="/staff/login" element={<StaffLogin />} />
+                  <Route path="/staff/dashboard" element={<StaffDashboard />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Layout>
