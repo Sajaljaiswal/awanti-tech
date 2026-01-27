@@ -88,7 +88,8 @@ export default function ProductManagement() {
       setFormData({ name: "", category: "", price: "", stock: "" });
       setImageFile(null);
     } catch (error) {
-      alert(error.message);
+      // alert(error.message);
+      console.error("Add product error:", error);
     } finally {
       setUploading(false);
     }
@@ -115,7 +116,8 @@ export default function ProductManagement() {
       // 3️⃣ Update UI
       setProducts(products.filter((p) => p.id !== product.id));
     } catch (error) {
-      alert(error.message);
+      // alert(error.message);
+      console.error("Delete product error:", error);
     }
   }
 

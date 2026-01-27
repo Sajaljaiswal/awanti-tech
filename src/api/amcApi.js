@@ -1,10 +1,60 @@
-import API from "./apiClient";
+import axios from "axios";
 
-export const fetchAMCs = () => API.get("/amc");
+// 1. Define the actual string URL of your backend. 
+// Port 5000 is standard for Express, while 5173 is your React Vite port.
+const BASE_URL = "http://localhost:5000/api/amcs"; 
 
-export const createAMC = (data) => API.post("/amc", data);
+/**
+ * FETCH ALL AMCs
+ */
+export const fetchAMCs = async () => {
+  try {
+    // Use BASE_URL directly here
+    const response = await axios.get(BASE_URL);
+    return response.data; 
+  } catch (error) {
+    console.error("Error fetching AMCs:", error);
+    throw error;
+  }
+};
 
-export const updateAMC = (id, data) => API.put(`/amc/${id}`, data);
+/**
+ * CREATE DETAILED AMC
+ */
+export const createDetailedAMC = async (formData) => {
+  try {
+    const response = await axios.post(BASE_URL, formData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating detailed AMC:", error);
+    throw error;
+  }
+};
 
-export const deleteAMC = (id) => API.delete(`/amc/${id}`);
-export const createDetailedAMC = (data) => API.post("/amc/detailed", data);
+/**
+ * UPDATE AMC
+ */
+export const updateAMC = async (id, formData) => {
+  try {
+    const response = await axios.put(`${BASE_URL}/${id}`, formData);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating AMC:", error);
+    throw error;
+  }
+};
+
+/**
+ * DELETE AMC
+ */
+export const deleteAMC = async (id) => {
+  try {
+    const response = await axios.delete(`${BASE_URL}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting AMC:", error);
+    throw error;
+  }
+};
+
+export const createAMC = createDetailedAMC;

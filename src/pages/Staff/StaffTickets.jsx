@@ -5,15 +5,26 @@ export default function StaffTickets({ staffId }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadTickets() {
-      const data = await getTicketsByStaff(staffId);
-      setTickets(data);
+ useEffect(() => {
+  async function loadTickets() {
+    try {
+      const response = await getTicketsByStaff(staffId);
+      
+      // If your API returns { data: [...] }, use response.data
+      // If it returns the array directly, use response
+      const ticketArray = response.data || response || [];
+      
+      setTickets(Array.isArray(ticketArray) ? ticketArray : []);
+    } catch (err) {
+      console.error("Failed to load tickets", err);
+      setTickets([]); // Fallback to empty array on error
+    } finally {
       setLoading(false);
     }
+  }
 
-    loadTickets();
-  }, [staffId]);
+  loadTickets();
+}, [staffId]);
 
   if (loading) {
     return <p className="p-4">Loading tickets...</p>;

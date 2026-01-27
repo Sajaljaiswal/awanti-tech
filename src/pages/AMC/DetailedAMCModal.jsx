@@ -81,32 +81,60 @@ export default function DetailedAMCModal({ isOpen, onClose, onSave }) {
             </div>
           </section>
 
-          {/* Section 2: Contact & Assets */}
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-slate-100 pt-8">
-            <div className="md:col-span-1 space-y-4">
-              <div className="flex items-center gap-2 mb-4 text-indigo-600 font-semibold uppercase text-xs tracking-wider">
-                <Phone size={16} />
-                <span>Contact Details</span>
-              </div>
-              <input className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Primary Contact No." onChange={e => setForm({...form, contact_no: e.target.value})} />
-             
-            </div>
+         {/* Section 2: Contact & Assets */}
+<section className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-slate-100 pt-8">
+  <div className="md:col-span-1 space-y-4">
+    <div className="flex items-center gap-2 mb-4 text-indigo-600 font-semibold uppercase text-xs tracking-wider">
+      <Phone size={16} />
+      <span>Contact Details</span>
+    </div>
+    <input 
+      className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-slate-700 outline-none" 
+      placeholder="Primary Contact No." 
+      value={form.contact_no}
+      onChange={e => setForm({...form, contact_no: e.target.value})} 
+    />
+  </div>
 
-            <div className="md:col-span-2 space-y-4">
-              <div className="flex items-center gap-2 mb-4 text-indigo-600 font-semibold uppercase text-xs tracking-wider">
-                <Monitor size={16} />
-                <span>Asset Inventory</span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {['Laptops', 'Computers', 'Printers', 'Scanners'].map((label) => (
-                  <div key={label} className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">{label}</label>
-                    <input type="number" className="w-full bg-transparent text-lg font-semibold text-slate-800 outline-none" defaultValue={0} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
+  <div className="md:col-span-2 space-y-4">
+    <div className="flex items-center gap-2 mb-4 text-indigo-600 font-semibold uppercase text-xs tracking-wider">
+      <Monitor size={16} />
+      <span>Asset Inventory</span>
+    </div>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {[
+        { label: 'Laptops', key: 'num_laptops' },
+        { label: 'Computers', key: 'num_computers' },
+        { label: 'Printers', key: 'num_printers' },
+        { label: 'Scanners', key: 'num_scanners' }
+      ].map((item) => (
+        <div key={item.key} className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+          <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">{item.label}</label>
+          <input 
+            type="number" 
+            className="w-full bg-transparent text-lg font-semibold text-slate-800 outline-none" 
+            value={form[item.key]} 
+            onChange={e => setForm({...form, [item.key]: parseInt(e.target.value) || 0})}
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+{/* Section 4: Unit Rate Fix */}
+<div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+  <label className="block text-[10px] font-bold text-indigo-600 uppercase mb-2">Unit Rate (per PC)</label>
+  <div className="flex items-center gap-2">
+    <span className="text-slate-400 font-bold">₹</span>
+    <input 
+      type="number" 
+      className="bg-transparent text-xl font-bold text-slate-800 outline-none w-full" 
+      value={form.rate_per_pc} 
+      onChange={e => setForm({...form, rate_per_pc: parseFloat(e.target.value) || 0})}
+    />
+  </div>
+</div>
 
           {/* Section 3: Hardware Config Table */}
           <section className="border-t border-slate-100 pt-8">

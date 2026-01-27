@@ -30,14 +30,14 @@ export default function StaffLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="bg-white w-full max-w-sm p-6 rounded-xl shadow">
-        <h2 className="text-xl font-bold mb-4 text-center">
+        <h2 className="text-xl font-bold mb-4 text-gray-800 text-center">
           Staff Login
         </h2>
 
         <input
           type="email"
           placeholder="Email"
-          className="w-full border rounded px-3 py-2 mb-3"
+          className="w-full border text-gray-800 rounded px-3 py-2 mb-3"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -45,7 +45,7 @@ export default function StaffLogin() {
         <input
           type="password"
           placeholder="Password"
-          className="w-full border rounded px-3 py-2 mb-4"
+          className="w-full border text-gray-800 rounded px-3 py-2 mb-4"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />

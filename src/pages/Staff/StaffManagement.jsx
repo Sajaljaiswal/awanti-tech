@@ -93,6 +93,15 @@ export default function StaffManagement() {
           </h2>
           <p className="text-slate-500 mt-1">Manage team roles, access levels, and account status.</p>
         </div>
+        
+        <Link to="/staff/login">
+  <button
+    className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-2"
+  >
+    <UserPlus size={18} />
+    Staff Login
+  </button>
+</Link>
         <button
           onClick={() => { resetForm(); setShowModal(true); }}
           className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-2"
