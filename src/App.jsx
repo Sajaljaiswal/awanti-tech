@@ -19,7 +19,7 @@ import Requests from "./pages/Requests";
 import StaffDetails from "./pages/Staff/StaffDetails.jsx";
 import StaffLogin from "./pages/Staff/StaffLogin.jsx";
 import StaffDashboard from "./pages/Staff/StaffDashboard.jsx";
-import AMCManagement from "./pages/AMC/AMCManagement.jsx";
+import ContractPage from "./pages/ContractPage.jsx";
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -73,9 +73,9 @@ export default function App() {
                   <Route path="/staff" element={<StaffManagement />} />
                   <Route path="/products" element={<ProductManagement />} />
                   <Route path="/tickets" element={<Tickets />} />
-                  <Route path="/amcManagement" element={<AMCManagement/>} />
                   <Route path="/requests" element={<Requests />} />
                   <Route path="/user" element={<UserManagement />} />
+                  <Route path="/contract" element={<ContractPage />} />
                   <Route path="/staff/:staffId" element={<StaffDetails />} />
                   <Route path="/staff/login" element={<StaffLogin />} />
                   <Route path="/staff/dashboard" element={<StaffDashboard />} />

@@ -13,7 +13,9 @@ const navItems = [
   { name: 'Products', path: '/products', icon: Package },
   { name: 'Tickets', path: '/tickets', icon: Wrench },
   { name: "Requests", path: "/requests", icon: Bell },
-  { name: 'AMC Management', path: '/amcManagement', icon: Wrench },
+  { name: 'Contract Management', path: '/contract', icon: MapPin },
+
+  // { name: 'AMC Management', path: '/amcManagement', icon: Wrench },
 ];
 
 export default function Layout({ children }) {
