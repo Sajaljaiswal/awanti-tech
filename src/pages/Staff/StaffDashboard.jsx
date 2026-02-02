@@ -32,7 +32,7 @@ export default function StaffDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow p-4">
-        <h2 className="font-bold">
+        <h2 className="font-bold text-2xl text-gray-800">
           Welcome, {staff.name}
         </h2>
         <p className="text-xs text-gray-500 capitalize">

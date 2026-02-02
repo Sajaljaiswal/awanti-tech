@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Package, Wrench, 
-  MapPin, LogOut, Bell, Search, Menu, X, ChevronRight
+  MapPin, LogOut, Bell, Search, Menu, X, ChevronRight,
+  UserCog
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 const navItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'Staff', path: '/staff', icon: Users },
+  { name: 'Staff', path: '/staff', icon: UserCog },
   { name: 'Users', path: '/user', icon: Users },
   { name: 'Products', path: '/products', icon: Package },
   { name: 'Tickets', path: '/tickets', icon: Wrench },
@@ -29,7 +30,7 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#fafafa]">
+    <div className="flex min-h-screen bg-[#fafafa] overflow-x-hidden">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
@@ -93,7 +94,7 @@ export default function Layout({ children }) {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 w-full ">
         {/* Aesthetic Top Navbar */}
         <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-6 md:px-10 sticky top-0 z-30">
           <div className="flex items-center gap-4">
@@ -121,7 +122,7 @@ export default function Layout({ children }) {
             
             <div className="flex items-center gap-3 group cursor-pointer">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-semibold text-gray-800 tracking-tight">Admin User</p>
+                <p className="text-xs font-semibold text-gray-800 tracking-tight">Owner</p>
                 <p className="text-[10px] text-gray-400 font-medium">Store Manager</p>
               </div>
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-lg shadow-indigo-100 flex items-center justify-center text-white font-bold text-xs ring-2 ring-white">

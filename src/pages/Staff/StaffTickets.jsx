@@ -32,10 +32,10 @@ export default function StaffTickets({ staffId }) {
 
   return (
     <div className="p-4 space-y-4">
-      <h3 className="font-bold text-lg">My Tickets</h3>
+      <h3 className="font-bold text-lg text-gray-800">My Tickets</h3>
 
       {tickets.length === 0 && (
-        <p className="text-gray-400">No tickets assigned</p>
+        <p className="text-gray-400 text-gray-500">No tickets assigned</p>
       )}
 
       {tickets.map((t) => (
@@ -44,7 +44,7 @@ export default function StaffTickets({ staffId }) {
           className="bg-white p-4 rounded-lg shadow-sm border"
         >
           <div className="flex justify-between">
-            <span className="font-semibold">{t.issue}</span>
+            <span className="font-semibold text-gray-800">{t.issue}</span>
             <span className="text-xs text-gray-500">
               {new Date(t.created_at).toLocaleDateString()}
             </span>

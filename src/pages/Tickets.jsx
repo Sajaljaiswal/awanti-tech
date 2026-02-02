@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Plus, User, Calendar, Trash2, Pencil } from "lucide-react";
 // 1. Toast import karein
-import toast, { Toaster } from "react-hot-toast"; 
+import toast, { Toaster } from "react-hot-toast";
 import {
   createTicket,
   getAllTickets,
@@ -67,7 +67,9 @@ export default function Tickets() {
       });
       fetchTickets();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Create failed", { id: loadingToast });
+      toast.error(err.response?.data?.message || "Create failed", {
+        id: loadingToast,
+      });
     }
   };
 
@@ -127,7 +129,6 @@ export default function Tickets() {
 
   return (
     <div className="w-[59rem] mx-auto p-4 space-y-6">
-      {/* 6. Toaster Component - Isse ek baar render karna zaroori hai */}
       <Toaster position="top-right" reverseOrder={false} />
 
       {/* HEADER */}
@@ -220,7 +221,9 @@ export default function Tickets() {
       {showAssign && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-md rounded-xl p-6">
-            <h3 className="text-xl text-gray-800 font-bold mb-4">Assign Ticket</h3>
+            <h3 className="text-xl text-gray-800 font-bold mb-4">
+              Assign Ticket
+            </h3>
             <p className="text-sm text-gray-600 mb-2">
               Ticket: <b>{assigningTicket.issue}</b>
             </p>
@@ -239,7 +242,10 @@ export default function Tickets() {
             </select>
 
             <div className="flex justify-end gap-3">
-              <button onClick={() => setShowAssign(false)} className="px-4 py-2">
+              <button
+                onClick={() => setShowAssign(false)}
+                className="px-4 py-2"
+              >
                 Cancel
               </button>
               <button
