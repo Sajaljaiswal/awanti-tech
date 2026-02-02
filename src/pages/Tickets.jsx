@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Plus, User, Calendar, Trash2, Pencil } from "lucide-react";
+// 1. Toast import karein
+import toast, { Toaster } from "react-hot-toast"; 
 import {
   createTicket,
   getAllTickets,
@@ -19,14 +21,10 @@ export default function Tickets() {
   const [assigningTicket, setAssigningTicket] = useState(null);
   const [selectedStaff, setSelectedStaff] = useState("");
 
-  /* ---------- CREATE MODAL ---------- */
   const [showCreate, setShowCreate] = useState(false);
-
-  /* ---------- EDIT MODAL ---------- */
   const [showEdit, setShowEdit] = useState(false);
   const [editingTicket, setEditingTicket] = useState(null);
 
-  /* ---------- FORM ---------- */
   const [formData, setFormData] = useState({
     customer_name: "",
     phone: "",
@@ -35,34 +33,30 @@ export default function Tickets() {
     issue: "",
   });
 
-  /* ---------- FETCH ---------- */
   const fetchTickets = async () => {
     try {
       setLoading(true);
       const res = await getAllTickets();
       setTickets(res.data);
     } catch (err) {
-      alert("Failed to load tickets");
+      toast.error("Failed to load tickets"); // 2. Error Toast
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchTickets();
-
     fetchStaff()
       .then(setStaff)
-      .catch(() => alert("Failed to load staff"));
+      .catch(() => toast.error("Failed to load staff"));
   }, []);
 
-  useEffect(() => {
-    fetchTickets();
-  }, []);
-
-  /* ---------- CREATE ---------- */
   const handleCreate = async () => {
+    const loadingToast = toast.loading("Creating ticket..."); // 3. Loading state
     try {
       await createTicket(formData);
+      toast.success("Ticket created successfully!", { id: loadingToast }); // 4. Success
       setShowCreate(false);
       setFormData({
         customer_name: "",
@@ -73,54 +67,52 @@ export default function Tickets() {
       });
       fetchTickets();
     } catch (err) {
-      alert(err.response?.data?.message || "Create failed");
+      toast.error(err.response?.data?.message || "Create failed", { id: loadingToast });
     }
   };
 
-  /* ---------- DELETE ---------- */
   const handleDelete = async (id) => {
     if (!confirm("Delete this ticket permanently?")) return;
     try {
       await deleteTicket(id);
       setTickets((prev) => prev.filter((t) => t.id !== id));
+      toast.success("Ticket deleted"); // 5. Delete success
     } catch {
-      alert("Delete failed");
+      toast.error("Delete failed");
     }
   };
 
   const handleAssignTicket = async () => {
     if (!selectedStaff) {
-      alert("Please select staff");
+      toast.error("Please select staff");
       return;
     }
 
     try {
       await assignTicket(assigningTicket.id, selectedStaff);
-
+      toast.success("Staff assigned successfully!");
       setShowAssign(false);
       setAssigningTicket(null);
       setSelectedStaff("");
-
-      fetchTickets(); // refresh list
+      fetchTickets();
     } catch {
-      alert("Assignment failed");
+      toast.error("Assignment failed");
     }
   };
 
-  /* ---------- STATUS UPDATE ---------- */
   const handleStatusChange = async (ticketId, status) => {
     try {
       await updateTicketStatus(ticketId, {
         status,
-        staff_id: "SYSTEM", // or req.user.id if available
+        staff_id: "SYSTEM",
       });
+      toast.success(`Status updated to ${status}`);
       fetchTickets();
     } catch {
-      alert("Status update failed");
+      toast.error("Status update failed");
     }
   };
 
-  /* ---------- EDIT ---------- */
   const openEditModal = (ticket) => {
     setEditingTicket(ticket);
     setFormData({
@@ -135,6 +127,9 @@ export default function Tickets() {
 
   return (
     <div className="w-[59rem] mx-auto p-4 space-y-6">
+      {/* 6. Toaster Component - Isse ek baar render karna zaroori hai */}
+      <Toaster position="top-right" reverseOrder={false} />
+
       {/* HEADER */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl text-gray-800 font-bold">Ticket Management</h2>
@@ -169,21 +164,6 @@ export default function Tickets() {
               </div>
 
               <div className="flex items-center gap-3 flex-wrap">
-                {/* STATUS DROPDOWN */}
-                {/* <select
-                  value={t.assigned_staff_id || ""}
-                  onChange={(e) =>
-                    assignTicket(t.id, { staff_id: e.target.value })
-                  }
-                >
-                  <option value="">Unassigned</option>
-                  {staff.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select> */}
-
                 <button
                   onClick={() => {
                     setAssigningTicket(t);
@@ -194,7 +174,6 @@ export default function Tickets() {
                   Assign
                 </button>
 
-                {/* EDIT */}
                 <button
                   onClick={() => openEditModal(t)}
                   className="text-blue-600"
@@ -202,7 +181,6 @@ export default function Tickets() {
                   <Pencil size={16} />
                 </button>
 
-                {/* DELETE */}
                 <button
                   onClick={() => handleDelete(t.id)}
                   className="text-red-600"
@@ -237,11 +215,12 @@ export default function Tickets() {
           readOnly
         />
       )}
+
+      {/* ASSIGN MODAL */}
       {showAssign && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-md rounded-xl p-6">
             <h3 className="text-xl text-gray-800 font-bold mb-4">Assign Ticket</h3>
-
             <p className="text-sm text-gray-600 mb-2">
               Ticket: <b>{assigningTicket.issue}</b>
             </p>
@@ -260,13 +239,9 @@ export default function Tickets() {
             </select>
 
             <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowAssign(false)}
-                className="px-4 py-2"
-              >
+              <button onClick={() => setShowAssign(false)} className="px-4 py-2">
                 Cancel
               </button>
-
               <button
                 onClick={handleAssignTicket}
                 className="bg-indigo-600 text-white px-4 py-2 rounded"
@@ -286,8 +261,8 @@ export default function Tickets() {
 function Modal({ title, onClose, onSubmit, formData, setFormData }) {
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-red w-full max-w-md rounded-xl p-6">
-        <h3 className="text-xl font-bold mb-4">{title}</h3>
+      <div className="bg-white w-full max-w-md rounded-xl p-6">
+        <h3 className="text-xl font-bold mb-4 text-gray-800">{title}</h3>
 
         {["customer_name", "phone", "address", "product_type", "issue"].map(
           (field) => (
@@ -298,18 +273,18 @@ function Modal({ title, onClose, onSubmit, formData, setFormData }) {
               onChange={(e) =>
                 setFormData({ ...formData, [field]: e.target.value })
               }
-              className="w-full border rounded px-3 py-2 mb-3"
+              className="w-full border text-gray-800 rounded px-3 py-2 mb-3 outline-none"
             />
           ),
         )}
 
         <div className="flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2">
+          <button onClick={onClose} className="px-4 py-2 text-gray-600">
             Cancel
           </button>
           <button
             onClick={onSubmit}
-            className="bg-indigo-600 text-white px-4 py-2 rounded"
+            className="bg-indigo-600 text-white px-4 py-2 rounded shadow-sm hover:bg-indigo-700"
           >
             Save
           </button>
