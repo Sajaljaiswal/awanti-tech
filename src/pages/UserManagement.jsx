@@ -57,6 +57,7 @@ export default function UserManagement() {
         setUsers((prev) => [res.data, ...prev]);
       }
       closeModal();
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       alert("Error saving user");
     }

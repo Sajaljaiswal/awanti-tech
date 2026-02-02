@@ -4,6 +4,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
 
@@ -56,6 +57,7 @@ export default function App() {
 
   return (
     <Router>
+       <Toaster position="top-right" reverseOrder={false} />
       <Routes>
         <Route
           path="/login"
