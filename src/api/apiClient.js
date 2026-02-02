@@ -1,8 +1,9 @@
-import axios from "axios";              // ✅ MISSING IMPORT (FIXED)
+import axios from "axios";              
 import { supabase } from "../supabaseClient";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000",
+  // baseURL: "http://localhost:5000",
+  baseURL: "https://awanti-backend.onrender.com",
 });
 
 API.interceptors.request.use(
